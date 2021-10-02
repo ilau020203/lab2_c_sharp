@@ -22,7 +22,8 @@ namespace lab2
         }
         ArrayList _articles;
         ArrayList _editors;
-        protected Frequency Frequency { get; set; }
+        
+        public Frequency Frequency { get; set; }
 
         /// <summary>
         /// Constructor with all necessary metadata.
@@ -62,9 +63,9 @@ namespace lab2
                     throw new ArgumentNullException();
                 foreach (object article in value)
                 {
-                    if (article is Article next)
+                    if (article is Article )
                     {
-                        temp.Add(next.DeepCopy());
+                        temp.Add((article as Article).DeepCopy());
                     }
                     else
                     {
@@ -118,16 +119,15 @@ namespace lab2
                     throw new ArgumentNullException();
                 foreach (object author in value)
                 {
-                    if (author is Person next)
+                    if (author is Person )
                     {
-                        temp.Add(next.DeepCopy());
+                        temp.Add((author as Person).DeepCopy());
                     }
                     else
                     {
                         throw new ArgumentNullException();
                     }
                 }
-
                 this._editors = temp;
             }
         }
@@ -236,7 +236,7 @@ namespace lab2
         {
             foreach (Article article in this._articles.Cast<Article>())
             {
-                if (this.Editors.Contains(article.Author))
+                if (this.Editors.Contains(article.Author))//includes
                 {
                     yield return article;
                 }
@@ -253,8 +253,8 @@ namespace lab2
             {
                 if (!this.Articles
                 .Cast<Article>()
-                .Select((Article article) => article.Author)
-                .Contains(author))
+                .Select((Article article) => article.Author)//map
+                .Contains(author))//includes
                 {
                     yield return author;
                 }

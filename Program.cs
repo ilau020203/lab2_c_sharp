@@ -110,7 +110,7 @@ namespace lab2
             Console.WriteLine($"Magazine as Editiion: {mag as Edition}");
 
             Console.WriteLine($"{Environment.NewLine}5");
-            Magazine mag_copy = (Magazine)mag.DeepCopy();
+            Magazine mag_copy = mag.DeepCopy() as Magazine;
             Console.WriteLine($"First magazine: {mag}");
             Console.WriteLine($"Second magazine: {mag_copy}");
 
@@ -157,13 +157,6 @@ namespace lab2
             }
             Console.WriteLine($"}}{Environment.NewLine}");
 
-            String something =null;
-            Person one = new Person(
-                        "Dmitriy",
-                        "Pupkin",
-                        new DateTime(1980, 3, 4)
-                    );
-            one.Equals(something);
         }
     }
 }
