@@ -20,8 +20,8 @@ namespace lab2
                 return new Edition(this.Title, this.ReleaseDate, this.Circulation);
             }
         }
-        ArrayList _articles;
-        ArrayList _editors;
+        List<Article> _articles;
+        List<Person> _editors;
         
         public Frequency Frequency { get; set; }
 
@@ -35,8 +35,8 @@ namespace lab2
         public Magazine(string title, Frequency frequency, DateTime releaseDate, int circulation) : base(title, releaseDate, circulation)
         {
             this.Frequency = frequency;
-            this._articles = new ArrayList();
-            this._editors = new ArrayList();
+            this._articles = new List<Article>();
+            this._editors = new List<Person>();
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace lab2
         /// Articles included in current Magazine.
         /// </summary>
         /// <value>New Articles to replace previous article list.</value>
-        public ArrayList Articles
+        public List<Article> Articles
         {
             get
             {
@@ -58,14 +58,14 @@ namespace lab2
             set
             {
                 //Doesn't leave instance in undefined state. Just cancells the operation.
-                ArrayList temp = new ArrayList();
+                List<Article> temp = new List<Article>();
                 if (value == null)
                     throw new ArgumentNullException();
-                foreach (object article in value)
+                foreach (Article article in value)
                 {
-                    if (article is Article )
+                    if (article != null)
                     {
-                        temp.Add((article as Article).DeepCopy());
+                        temp.Add(article.DeepCopy() as Article);
                     }
                     else
                     {
@@ -105,7 +105,7 @@ namespace lab2
         /// Editors of current Magazine.
         /// </summary>
         /// <value>New Editors to replace previous editors list.</value>
-        public ArrayList Editors
+        public List<Person> Editors
         {
             get
             {
@@ -114,14 +114,14 @@ namespace lab2
             set
             {
                 //Doesn't leave instance in undefined state. Just cancells the operation.
-                ArrayList temp = new ArrayList();
+                List<Person> temp = new List<Person>();
                 if (value == null)
                     throw new ArgumentNullException();
-                foreach (object author in value)
+                foreach (Person author in value)
                 {
-                    if (author is Person )
+                    if (author != null)
                     {
-                        temp.Add((author as Person).DeepCopy());
+                        temp.Add(author.DeepCopy() as Person);
                     }
                     else
                     {
@@ -159,9 +159,9 @@ namespace lab2
         {
             get
             {
-                return _articles.Cast<Article>()
+                return _articles.Count!=0? _articles.Cast<Article>()
                 .Select((Article next) => next.Rating)
-                .Average();
+                .Average():0;
             }
         }
         /// <summary>
@@ -220,9 +220,9 @@ namespace lab2
         public object DeepCopy()
         {
             var temp = new Magazine(this.Title, this.Frequency, this.ReleaseDate, this.Circulation);
-            temp.Articles = new ArrayList();
+            temp.Articles = new List<Article>();
             temp.Articles.AddRange(this._articles);
-            temp.Editors = new ArrayList();
+            temp.Editors = new List<Person>();
             temp.Editors.AddRange(this._editors);
             return temp;
         }
@@ -265,48 +265,23 @@ namespace lab2
         /// <summary>
         /// Helping class to carry data for Article iteration.
         /// </summary>
-        class MagazineEnumerator : IEnumerator
+        public class MagazineEnumerator : IEnumerator
         {
-            private int position;
-            private ArrayList editors;
-            private ArrayList articles;
+            internal IEnumerator RealEnumerator;
 
-            public MagazineEnumerator(ArrayList _editors, ArrayList _articles)
+            public object Current
             {
-                position = -1;
-                editors = _editors;
-                articles = _articles;
+                get => this.RealEnumerator.Current;
             }
 
             public bool MoveNext()
             {
-                if (position < articles.Count - 1)
-                {
-                    position++;
-                    var art = articles[position] as Article;
-                    while (editors.Contains(art.Author))
-                    {
-                        position++;
-                        if (position >= articles.Count) return false;
-                        art = articles[position] as Article;
-                    }
-                    return true;
-                }
-                else return false;
-            }
-
-            public object? Current
-            {
-                get
-                {
-                    if (position == -1 || position >= articles.Count) throw new InvalidOperationException();
-                    return articles[position];
-                }
+                return RealEnumerator.MoveNext();
             }
 
             public void Reset()
             {
-                position = -1;
+                RealEnumerator.Reset();
             }
         }
         /// <summary>
@@ -314,7 +289,12 @@ namespace lab2
         /// </summary>
         public IEnumerator GetEnumerator()
         {
-            return new MagazineEnumerator(_editors,_articles);
+            return new MagazineEnumerator
+            {
+                RealEnumerator = this._articles
+                .Where((Article article) => !this._editors.Contains(article.Author))
+                .GetEnumerator()
+            };
         }
     }
 }

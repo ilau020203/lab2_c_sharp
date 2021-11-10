@@ -106,7 +106,7 @@ namespace lab2
         }
 
         /// <summary>
-        /// Single line representation of person with no birthday.
+        /// Single line representation of person< with no birthday.
         /// </summary>
         /// <returns></returns>
         public virtual string ToShortString()
@@ -120,16 +120,10 @@ namespace lab2
         /// <param name="obj">Other Person to check for equality.</param>
         public override bool Equals(object obj)
         {
-            if (obj is Person)
-            {
-                Person edition = obj as Person;
-
-                return this._name == edition._name &&
-            this._surname == edition._surname &&
-            this.Birthday == edition._birthday;
-            }
-            return false;
-
+            return obj is Person other &&
+            this._name == other._name &&
+            this._surname == other._surname &&
+            this.Birthday == other._birthday;
         }
 
 

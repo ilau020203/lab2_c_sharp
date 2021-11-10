@@ -9,6 +9,6 @@ namespace lab2
     /// </summary>
     enum Frequency
     {
-        Weekly, Monthly, Yearly, Dayly
+        Weekly=0, Monthly=1, Yearly=2, Dayly=3
     }
 }

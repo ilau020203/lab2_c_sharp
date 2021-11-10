@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -8,155 +9,113 @@ namespace lab2
     {
         static void Main(string[] _args)
         {
-            Console.WriteLine($"{Environment.NewLine}1");
-            Edition first = new Edition("model", new DateTime(1, 1, 1), 100);
-            Console.WriteLine($"First edition: {first}");
-            Edition second = new Edition("model", new DateTime(1, 1, 1), 100);
-            Console.WriteLine($"Second Edition (same as first) {second}");
-            Console.WriteLine($"Reference equality: {first as object == second as object}");
-            Console.WriteLine($"Value equality: {first == second}");
-
-            Console.WriteLine($"{Environment.NewLine}2");
-            try
+            //1
+            List<Magazine> magazineList=new List<Magazine>();
+            magazineList.Add(new Magazine("Horroh stories inc.", Frequency.Monthly, DateTime.Now, 100000));
+            magazineList.Add(new Magazine("aHorroh stories inc.", Frequency.Monthly, new DateTime(2001, 1, 1), 144400000));
+            magazineList.Add(new Magazine("Horroh stories inc.", Frequency.Monthly, new DateTime(2001, 1, 1), 100000));
+            magazineList.Add(new Magazine("Horroh stories inc.", Frequency.Monthly, DateTime.Now, 144400000));
+            magazineList.Add(new Magazine("aHorroh stories inc", Frequency.Dayly, DateTime.Now, 100000));
+          
+            foreach(Magazine magazine in magazineList)
             {
-                first.Circulation = -100;
+                magazine.AddArticles(new Article());
             }
-            catch (Exception ex)
+            magazineList[0].AddArticles(new Article(new Person(), "asdf", 3425));
+            magazineList.Sort();
+            foreach (Magazine magazine in magazineList)
             {
-                Console.WriteLine($"{ex}");
+                Console.WriteLine(magazine.ToShortString());
+            }
+            magazineList.Sort((new Magazine()).Compare);
+            foreach (Magazine magazine in magazineList)
+            {
+                Console.WriteLine(magazine.ToShortString());
+            }
+            magazineList.Sort(new CirculationComparer());
+            foreach (Magazine magazine in magazineList)
+            {
+                Console.WriteLine(magazine.ToShortString());
             }
 
-            Console.WriteLine($"{Environment.NewLine}3");
-            Magazine mag = new Magazine("Horroh stories inc.", Frequency.Monthly, DateTime.Now, 100000);
-            mag.AddArticles(
-                new Article(
-                    new Person(
-                        "Frank",
-                        "James",
-                        new DateTime(1990, 1, 2)
-                    ),
-                    "Horror story 1",
-                    50.0
-                ),
-                new Article(
-                    new Person(
-                        "Frank",
-                        "James",
-                        new DateTime(1990, 1, 2)
-                    ),
-                    "Horror story 2",
-                    70.0
-                ),
-                new Article(
-                    new Person(
-                        "Frank",
-                        "James",
-                        new DateTime(1990, 1, 2)
-                    ),
-                    "Horror story 3",
-                    90.0
-                ),
-                new Article(
-                    new Person(
-                        "Dmitriy",
-                        "Pupkin",
-                        new DateTime(1980, 3, 4)
-                    ),
-                    "Scary story 1",
-                    10.0
-                ),
-                new Article(
-                    new Person(
-                        "Dmitriy",
-                        "Pupkin",
-                        new DateTime(1980, 3, 4)
-                    ),
-                    "Scary story 2",
-                    20.0
-                ),
-                new Article(
-                    new Person(
-                        "Dmitriy",
-                        "Pupkin",
-                        new DateTime(1980, 3, 4)
-                    ),
-                    "Scary story 1 REMAKE",
-                    10.0
-                ), new Article(
-                    new Person(
-                    "Vladimir",
-                    "Vladimirovich",
-                    new DateTime(1952, 10, 7)
-                ),
-                    "Scary story 1 REMAKE",
-                    10.0
-                )
-            );
-            mag.AddEditors(
-                new Person(
-                    "Vladimir",
-                    "Vladimirovich",
-                    new DateTime(1952, 10, 7)
-                ),
-                new Person(
-                    "Ramzan",
-                    "Achmatovich",
-                    new DateTime(1976, 10, 5)
-                )
-            );
-            Console.WriteLine(mag.ToString());
 
-            Console.WriteLine($"{Environment.NewLine}4");
-            Console.WriteLine($"Magazine as Editiion: {mag as Edition}");
+            //2------------------
+            Console.WriteLine("\n\nPart 2\n\n");
+            KeySelector<String> selector = delegate (Magazine magazine) { return magazine.GetHashCode().ToString(); };
+            MagazineCollection<String> mgCollection = new MagazineCollection<string>(selector);
+            mgCollection.AddDefaults(3);
+            mgCollection.AddMagazines(new Magazine("aHorroh stories inc.", Frequency.Monthly, new DateTime(2001, 1, 1), 144400000));
+            Console.WriteLine(mgCollection.ToShortString());
+            ///3----------------
+            Console.WriteLine(mgCollection.MaxRating);
 
-            Console.WriteLine($"{Environment.NewLine}5");
-            Magazine mag_copy = mag.DeepCopy() as Magazine;
-            Console.WriteLine($"First magazine: {mag}");
-            Console.WriteLine($"Second magazine: {mag_copy}");
 
-            Console.WriteLine($"{Environment.NewLine}6");
-            //String.Join() Has foreach in its realization
-            Console.WriteLine($"Articles with Rating More than 50 from second magazine: {String.Join(Environment.NewLine, mag_copy.ArticlesWithRatingHigherThan(50.0))}");
-
-            Console.WriteLine($"{Environment.NewLine}7");
-            Console.WriteLine($"Second part of each article series: {String.Join(Environment.NewLine, mag_copy.ArticlesWithNameContaining("2"))}");
-
-            Console.WriteLine($"{Environment.NewLine}8");
-            Console.WriteLine($"Articles with Authors not in Editors list: {{");
-            foreach (Article article in mag_copy)
+            var mgGroups = mgCollection.FrequencyGroup(Frequency.Monthly);
+            Console.WriteLine("Magazine with monthly output frequency: ");
+            foreach (var keyValuePair in mgGroups)
             {
-                foreach (
-                    string line in article.ToString().Split(Environment.NewLine))
+                Console.WriteLine(keyValuePair.Value);
+            }
+
+
+            foreach (var item in mgCollection.GroupCollection)
+            {
+                Console.WriteLine(item.Key);
+                Console.WriteLine();
+                foreach (var name in item)
                 {
-                    Console.WriteLine($"  {line}");
+                    Console.WriteLine(name);
                 }
             }
-            Console.WriteLine($"}}{Environment.NewLine}");
 
-            Console.WriteLine($"{Environment.NewLine}9");
-            Console.WriteLine($"Articles with Authors in Editors list: {{");
-            foreach (Article article in mag_copy.ArticlesWithAuthorSameAsEditor())
+
+            //4----------------------------
+            int size = -1;
+            Console.Write("Size of collection: ");
+            Console.ResetColor();
+            while (!int.TryParse(Console.ReadLine(), out size) || size < 0)
             {
-                foreach (
-                    string line in article.ToString().Split(Environment.NewLine))
-                {
-                    Console.WriteLine($"  {line}");
-                }
+                Console.WriteLine("Incorrect number, try again:");
+                Console.ResetColor();
             }
-            Console.WriteLine($"}}{Environment.NewLine}");
 
-            Console.WriteLine($"{Environment.NewLine}10");
-            Console.WriteLine($"Editors within authors list: {{");
-            foreach (Person author in mag_copy.EditorsWithNoArticles())
+            GenerateElement<Edition, Magazine> generatorFunc = delegate (int j)
             {
-                foreach (
-                    string line in author.ToString().Split(Environment.NewLine))
+                try
                 {
-                    Console.WriteLine($"  {line}");
-                }
-            }
-            Console.WriteLine($"}}{Environment.NewLine}");
+                    var key = new Edition("Edition" + j.ToString(), new DateTime(j % 9999 + 1, (j % 12) + 1, 1 + (j % 28)), j * j);
+                    var value = new Magazine( "Mag" + j.ToString(), (Frequency)(j % 3), new DateTime(j % 9999 + 1, 1 + j % 12, 1 + j % 28), j);
+                    return new KeyValuePair<Edition, Magazine>(key, value);
 
+                }
+                catch (Exception e)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(j);
+                    Console.WriteLine(e);
+                    throw;
+                }
+
+            };
+            TestCollections<Edition, Magazine>
+                collections = new TestCollections<Edition, Magazine>(size, generatorFunc);
+            Console.WriteLine("String List:");
+            collections.SearchStringList();
+            Console.WriteLine("____________________________________________");
+            Console.WriteLine("TList");
+            collections.SearchTList();
+            Console.WriteLine("____________________________________________");
+            Console.WriteLine("String dict by key");
+            collections.SearchStringDictByKey();
+            Console.WriteLine("____________________________________________");
+            Console.WriteLine("String dict by value");
+            collections.SearchStringDictByValue();
+            Console.WriteLine("____________________________________________");
+            Console.WriteLine("TDict by key");
+            collections.SearchTDictByKey();
+            Console.WriteLine("____________________________________________");
+            Console.WriteLine("TDict by value");
+            collections.SearchTDictByValue();
         }
     }
 }

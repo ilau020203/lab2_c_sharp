@@ -1,11 +1,14 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace lab2
 {
     /// <summary>
     /// Class for containing signle Edition metadata.
     /// </summary>
-    public class Edition
+    public class Edition : IComparable, IComparer<Edition> 
     {
         /// <summary>
         /// Constructor with all necessary parameters.
@@ -80,17 +83,12 @@ namespace lab2
         /// <param name="obj">Other object to compare.</param>
 
         public override bool Equals(object obj)
-        {   
-            if(obj is Edition)
-            {
-                Edition edition = obj as Edition;
+        {
+            return obj is Edition other &&
+           this.Circulation == other._circulation &&
+           this._releaseDate == other.ReleaseDate &&
+           this._title == other._title;
 
-                return  this.Circulation == edition._circulation &&
-                           this._releaseDate == edition.ReleaseDate &&
-                           this._title == edition._title;
-            }
-            return false;
-           
         }
 
         /// <summary>
@@ -123,6 +121,10 @@ namespace lab2
             this._releaseDate.GetHashCode();
         }
 
+
+
+
+
         /// <summary>
         /// Multiline String representation of Edition.
         /// </summary>
@@ -133,6 +135,34 @@ namespace lab2
             $"  Release date: {this._releaseDate},{Environment.NewLine}" +
             $"  Circulation: {this._circulation} copies,{Environment.NewLine}" +
             $"}}";
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public int CompareTo(object obj)
+        {
+            if (obj == null) return 1;
+            if (obj is Edition otherEdition)
+                return this._title.CompareTo(otherEdition._title);
+            else
+                throw new ArgumentException("Object is not a Edition");
+        }
+
+        public int Compare(Edition x, Edition y)
+        {
+            return x._releaseDate.CompareTo(y._releaseDate);
+        }
+
+    }
+
+    class CirculationComparer : IComparer<Edition>
+    {
+        public int Compare(Edition p, Edition q)
+        {
+            return p.Circulation.CompareTo(q.Circulation);
         }
     }
 }
