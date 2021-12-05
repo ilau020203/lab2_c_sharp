@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace lab2
@@ -8,7 +9,7 @@ namespace lab2
     /// <summary>
     /// Class for containing signle Edition metadata.
     /// </summary>
-    public class Edition : IComparable, IComparer<Edition> 
+    public class Edition : IComparable, IComparer<Edition> , INotifyPropertyChanged
     {
         /// <summary>
         /// Constructor with all necessary parameters.
@@ -27,9 +28,11 @@ namespace lab2
         /// Default constructor.
         /// </summary>
         protected Edition() : this("blank title", DateTime.Now, 0) { }
+        public event PropertyChangedEventHandler PropertyChanged;
         protected string _title;
         protected DateTime _releaseDate;
         protected int _circulation;
+
 
         /// <summary>
         /// Represents Title of the Edition.
@@ -48,7 +51,11 @@ namespace lab2
         public DateTime ReleaseDate
         {
             get => this._releaseDate;
-            set => this._releaseDate = value;
+            set 
+            {
+                this._releaseDate = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("DateTime"));
+            }
         }
 
         /// <summary>
@@ -67,6 +74,7 @@ namespace lab2
                 if (value >= 0)
                 {
                     this._circulation = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Circulation"));
                 }
                 else
                 {
