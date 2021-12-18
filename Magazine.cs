@@ -11,7 +11,6 @@ namespace lab2
     /// <summary>
     /// Class for containing all Magazine metadata, including editors and articles.
     /// </summary>
-    /// 
     [Serializable]
     class Magazine : Edition, IRateAndCopy, IEnumerable, INotifyPropertyChanged
     {
