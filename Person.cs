@@ -7,6 +7,7 @@ namespace lab2
     /// <summary>
     /// Class for containing single person data.
     /// </summary>
+    [Serializable]
     class Person
     {
         string _name;

@@ -9,6 +9,7 @@ namespace lab2
     /// <summary>
     /// Class for containing signle Edition metadata.
     /// </summary>
+    [Serializable]
     public class Edition : IComparable, IComparer<Edition> , INotifyPropertyChanged
     {
         /// <summary>

@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace lab2
 {
     /// <summary>
     /// Class for containing all Magazine metadata, including editors and articles.
     /// </summary>
-    class Magazine : Edition, IRateAndCopy, IEnumerable
+    /// 
+    [Serializable]
+    class Magazine : Edition, IRateAndCopy, IEnumerable, INotifyPropertyChanged
     {
         /// <summary>
         /// Copy of Magazine instance as Edition.
@@ -172,6 +177,10 @@ namespace lab2
         {
             this._articles.AddRange(list);
         }
+        public void AddArticles(List<Article> list)
+        {
+            this._articles.AddRange(list);
+        }
 
         /// <summary>
         /// Check if specified frequency is equal to current one.
@@ -219,15 +228,115 @@ namespace lab2
         /// </summary>
         public object DeepCopy()
         {
-            var temp = new Magazine(this.Title, this.Frequency, this.ReleaseDate, this.Circulation);
-            temp.Articles = new List<Article>();
-            temp.Articles.AddRange(this._articles);
-            temp.Editors = new List<Person>();
-            temp.Editors.AddRange(this._editors);
-            return temp;
+            BinaryFormatter binForm = new BinaryFormatter();
+            Magazine result;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                binForm.Serialize(ms, this);
+                ms.Position = 0;
+                result = (Magazine)binForm.Deserialize(ms);
+            }
+            return result;
+        }
+        public bool Save(string filename)
+        {
+            BinaryFormatter binForm = new BinaryFormatter();
+            try
+            {
+                using (FileStream fs = new FileStream(filename, FileMode.Create))
+                {
+                    binForm.Serialize(fs, this);
+                    fs.Close();
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public bool Load(string filename)
+        {
+            BinaryFormatter binForm = new BinaryFormatter();
+            Magazine magazine;
+            try
+            {
+                using (FileStream fs = new FileStream(filename, FileMode.Open))
+                {
+                    magazine = (Magazine)binForm.Deserialize(fs);
+                    this._circulation = magazine._circulation;
+                    this._title = magazine._title;
+                    this._releaseDate = magazine._releaseDate;
+                    this.Frequency = magazine.Frequency;
+                    _articles.Clear();
+                    _editors.Clear();
+                    foreach (Person p in magazine._editors)
+                    {
+                        _editors.Add(new Person(p.Name, p.Surname, p.Birthday));
+                    }
+                    foreach (Article a in magazine._articles)
+                    {
+                        _articles.Add((Article)a.DeepCopy());
+                    }
+                    fs.Close();
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public bool AddFromConsole()
+        {
+            try
+            {
+                Console.WriteLine("Для добавления статьи введите данные в виде следующей строки: Имя Фамилия гггг.мм.дд названиеСтатьи рейтингСтатьи");
+                string input = Console.ReadLine();
+                string[] data = input.Split(" ");
+                Person author = new Person(data[0], data[1], Convert.ToDateTime(data[2]));
+                this._articles.Add(new Article(author, data[3], Convert.ToDouble(data[4])));
+                return true;
+            }
+            catch
+            {
+                Console.WriteLine("В вводе были допущены ошибки");
+                return false;
+            }
+        }
+        public static bool Save(string filename, Magazine magazine)
+        {
+            BinaryFormatter binForm = new BinaryFormatter();
+            try
+            {
+                using (FileStream fs = new FileStream(filename, FileMode.Create))
+                {
+                    binForm.Serialize(fs, magazine);
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public static bool Load(string filename, ref Magazine magazine)
+        {
+            BinaryFormatter binForm = new BinaryFormatter();
+            try
+            {
+                using (FileStream fs = new FileStream(filename, FileMode.Open))
+                {
+                    magazine = (Magazine)binForm.Deserialize(fs);
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
-       
 
         /// <summary>
         /// Represents articles, which authors were included in current Magazine's editors list.

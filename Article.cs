@@ -6,6 +6,7 @@ namespace lab2
     /// <summary>
     /// Class for containing Article Metadata and author information/
     /// </summary>
+    [Serializable]
     class Article : IRateAndCopy
     {
         Person _author;
